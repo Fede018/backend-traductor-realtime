@@ -21,9 +21,9 @@ public class AudioController {
 
 	@PostMapping("/api/audio")
 	public ResponseEntity<AudioUploadResponse> uploadAudio(
-			@RequestParam("audio") MultipartFile audio,
-			@RequestParam String sourceLanguage,
-			@RequestParam String targetLanguage
+			@RequestParam(value = "audio", required = false) MultipartFile audio,
+			@RequestParam(required = false) String sourceLanguage,
+			@RequestParam(required = false) String targetLanguage
 	) {
 		AudioUploadResponse response = audioService.receive(audio, sourceLanguage, targetLanguage);
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
