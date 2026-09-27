@@ -1,17 +1,13 @@
 package backtraduct.example.traductor.client;
 
-import java.io.IOException;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
-import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClient;
-import org.springframework.web.multipart.MultipartFile;
 
 import backtraduct.example.traductor.exception.SttException;
 
@@ -33,10 +29,10 @@ public class OpenAiSttClient {
 		this.model = model;
 	}
 
-	public String transcribe(MultipartFile audio, String languageHint) {
+	public String transcribe(byte[] audioBytes, String filename, String languageHint) {
 		try {
 			MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-			body.add("file", toResource(audio));
+			body.add("file", toResource(audioBytes, filename));
 			body.add("model", model);
 			body.add("language", languageHint);
 
@@ -57,12 +53,12 @@ public class OpenAiSttClient {
 		}
 	}
 
-	private Resource toResource(MultipartFile audio) throws IOException {
-		String filename = audio.getOriginalFilename() != null ? audio.getOriginalFilename() : "audio";
-		return new ByteArrayResource(audio.getBytes()) {
+	private ByteArrayResource toResource(byte[] audioBytes, String filename) {
+		String resolvedFilename = filename != null ? filename : "audio";
+		return new ByteArrayResource(audioBytes) {
 			@Override
 			public String getFilename() {
-				return filename;
+				return resolvedFilename;
 			}
 		};
 	}
