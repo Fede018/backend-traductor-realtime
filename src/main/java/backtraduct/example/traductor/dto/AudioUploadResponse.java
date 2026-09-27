@@ -7,5 +7,6 @@ public record AudioUploadResponse(
 		long receivedBytes,
 		String contentType,
 		String sourceLanguage,
-		String targetLanguage
+		String targetLanguage,
+		String transcript
 ) {}
