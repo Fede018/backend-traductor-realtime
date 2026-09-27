@@ -1,5 +1,6 @@
 package backtraduct.example.traductor.service;
 
+import java.util.Base64;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
@@ -7,18 +8,25 @@ import org.springframework.web.multipart.MultipartFile;
 
 import backtraduct.example.traductor.client.OpenAiSttClient;
 import backtraduct.example.traductor.client.OpenAiTranslationClient;
+import backtraduct.example.traductor.client.OpenAiTtsClient;
 import backtraduct.example.traductor.dto.AudioUploadResponse;
 import backtraduct.example.traductor.exception.TranslationException;
+import backtraduct.example.traductor.exception.TtsException;
 
 @Service
 public class AudioService {
 
 	private final OpenAiSttClient openAiSttClient;
 	private final OpenAiTranslationClient openAiTranslationClient;
+	private final OpenAiTtsClient openAiTtsClient;
 
-	public AudioService(OpenAiSttClient openAiSttClient, OpenAiTranslationClient openAiTranslationClient) {
+	public AudioService(
+			OpenAiSttClient openAiSttClient,
+			OpenAiTranslationClient openAiTranslationClient,
+			OpenAiTtsClient openAiTtsClient) {
 		this.openAiSttClient = openAiSttClient;
 		this.openAiTranslationClient = openAiTranslationClient;
+		this.openAiTtsClient = openAiTtsClient;
 	}
 
 	public AudioUploadResponse receive(MultipartFile audio, String sourceLanguage, String targetLanguage) {
@@ -40,6 +48,13 @@ public class AudioService {
 
 		String translation = openAiTranslationClient.translate(transcript, sourceLanguage, targetLanguage);
 
+		if (translation.isBlank()) {
+			throw new TtsException("No hay texto traducido para sintetizar");
+		}
+
+		byte[] translationAudio = openAiTtsClient.synthesize(translation);
+		String translationAudioBase64 = Base64.getEncoder().encodeToString(translationAudio);
+
 		return new AudioUploadResponse(
 				UUID.randomUUID(),
 				audio.getSize(),
@@ -47,7 +62,8 @@ public class AudioService {
 				sourceLanguage,
 				targetLanguage,
 				transcript,
-				translation
+				translation,
+				translationAudioBase64
 		);
 	}
 }

@@ -21,12 +21,18 @@ public class GlobalExceptionHandler {
 
 	@ExceptionHandler(SttException.class)
 	public ProblemDetail handleSttException(SttException ex) {
+		ex.printStackTrace();
 		return ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, "No se pudo transcribir el audio");
 	}
 
 	@ExceptionHandler(TranslationException.class)
 	public ProblemDetail handleTranslationException(TranslationException ex) {
 		return ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, "No se pudo traducir el texto");
+	}
+
+	@ExceptionHandler(TtsException.class)
+	public ProblemDetail handleTtsException(TtsException ex) {
+		return ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, "No se pudo generar el audio de la traducción");
 	}
 
 	@ExceptionHandler(Exception.class)
