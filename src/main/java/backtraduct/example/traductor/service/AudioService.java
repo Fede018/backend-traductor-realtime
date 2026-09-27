@@ -7,6 +7,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import backtraduct.example.traductor.client.OpenAiSttClient;
 import backtraduct.example.traductor.dto.AudioUploadResponse;
+import backtraduct.example.traductor.exception.TranslationException;
 
 @Service
 public class AudioService {
@@ -29,6 +30,10 @@ public class AudioService {
 		}
 
 		String transcript = openAiSttClient.transcribe(audio, sourceLanguage);
+
+		if (transcript.isBlank()) {
+			throw new TranslationException("No se detectó voz en el audio");
+		}
 
 		return new AudioUploadResponse(
 				UUID.randomUUID(),
