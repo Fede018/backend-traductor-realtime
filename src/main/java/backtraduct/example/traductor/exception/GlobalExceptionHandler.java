@@ -19,6 +19,11 @@ public class GlobalExceptionHandler {
 		return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
 	}
 
+	@ExceptionHandler(SttException.class)
+	public ProblemDetail handleSttException(SttException ex) {
+		return ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, "No se pudo transcribir el audio");
+	}
+
 	@ExceptionHandler(Exception.class)
 	public ProblemDetail handleException(Exception ex) {
 		return ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
