@@ -35,6 +35,11 @@ public class GlobalExceptionHandler {
 		return ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, "No se pudo generar el audio de la traducción");
 	}
 
+	@ExceptionHandler(RealtimeSessionException.class)
+	public ProblemDetail handleRealtimeSessionException(RealtimeSessionException ex) {
+		return ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, "No se pudo crear la sesión de tiempo real");
+	}
+
 	@ExceptionHandler(Exception.class)
 	public ProblemDetail handleException(Exception ex) {
 		return ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
