@@ -84,6 +84,7 @@ public class AudioStreamHandler extends BinaryWebSocketHandler {
 			);
 			sendResult(session, response);
 		} catch (Exception e) {
+			e.printStackTrace();
 			sendError(session, e.getMessage());
 		} finally {
 			state.reset();
