@@ -5,10 +5,17 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import backtraduct.example.traductor.client.OpenAiSttClient;
 import backtraduct.example.traductor.dto.AudioUploadResponse;
 
 @Service
 public class AudioService {
+
+	private final OpenAiSttClient openAiSttClient;
+
+	public AudioService(OpenAiSttClient openAiSttClient) {
+		this.openAiSttClient = openAiSttClient;
+	}
 
 	public AudioUploadResponse receive(MultipartFile audio, String sourceLanguage, String targetLanguage) {
 		if (audio == null || audio.isEmpty()) {
@@ -21,12 +28,15 @@ public class AudioService {
 			throw new IllegalArgumentException("targetLanguage no puede estar vacío");
 		}
 
+		String transcript = openAiSttClient.transcribe(audio, sourceLanguage);
+
 		return new AudioUploadResponse(
 				UUID.randomUUID(),
 				audio.getSize(),
 				audio.getContentType(),
 				sourceLanguage,
-				targetLanguage
+				targetLanguage,
+				transcript
 		);
 	}
 }
