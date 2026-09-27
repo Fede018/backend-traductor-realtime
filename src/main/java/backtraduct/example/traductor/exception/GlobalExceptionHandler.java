@@ -24,6 +24,11 @@ public class GlobalExceptionHandler {
 		return ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, "No se pudo transcribir el audio");
 	}
 
+	@ExceptionHandler(TranslationException.class)
+	public ProblemDetail handleTranslationException(TranslationException ex) {
+		return ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, "No se pudo traducir el texto");
+	}
+
 	@ExceptionHandler(Exception.class)
 	public ProblemDetail handleException(Exception ex) {
 		return ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
