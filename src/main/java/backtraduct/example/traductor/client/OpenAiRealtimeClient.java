@@ -16,7 +16,7 @@ import backtraduct.example.traductor.exception.RealtimeSessionException;
 @Component
 public class OpenAiRealtimeClient {
 
-	private static final String SESSIONS_URL = "https://api.openai.com/v1/realtime/sessions";
+	private static final String CLIENT_SECRETS_URL = "https://api.openai.com/v1/realtime/client_secrets";
 
 	private final RestClient restClient;
 	private final String model;
@@ -27,7 +27,7 @@ public class OpenAiRealtimeClient {
 			@Value("${openai.realtime.model}") String model,
 			@Value("${openai.realtime.voice}") String voice) {
 		this.restClient = RestClient.builder()
-				.baseUrl(SESSIONS_URL)
+				.baseUrl(CLIENT_SECRETS_URL)
 				.defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + apiKey)
 				.build();
 		this.model = model;
@@ -40,22 +40,26 @@ public class OpenAiRealtimeClient {
 					+ "Tu única tarea es escuchar lo que se dice en " + sourceLanguage
 					+ " y decir en voz alta, inmediatamente, la traducción literal en " + targetLanguage + ". Nada más.";
 
-			SessionRequest request = new SessionRequest(model, voice, new TurnDetection("server_vad"), instructions);
+			SessionSpec session = new SessionSpec(
+					"realtime",
+					model,
+					instructions,
+					new AudioSpec(new OutputAudio(voice), new InputAudio(new TurnDetection("server_vad"))));
 
-			SessionResponse response = restClient.post()
+			ClientSecretResponse response = restClient.post()
 					.contentType(MediaType.APPLICATION_JSON)
-					.body(request)
+					.body(new ClientSecretRequest(session))
 					.retrieve()
-					.body(SessionResponse.class);
+					.body(ClientSecretResponse.class);
 
-			if (response == null || response.clientSecret() == null || response.clientSecret().value() == null) {
+			if (response == null || response.value() == null || response.session() == null) {
 				throw new RealtimeSessionException("Respuesta vacía de OpenAI");
 			}
 
 			return new RealtimeSessionResponse(
-					response.clientSecret().value(),
-					Instant.ofEpochSecond(response.clientSecret().expiresAt()),
-					response.model());
+					response.value(),
+					Instant.ofEpochSecond(response.expiresAt()),
+					response.session().model());
 		} catch (RealtimeSessionException e) {
 			throw e;
 		} catch (Exception e) {
@@ -63,15 +67,22 @@ public class OpenAiRealtimeClient {
 		}
 	}
 
-	private record SessionRequest(
-			String model,
-			String voice,
-			@JsonProperty("turn_detection") TurnDetection turnDetection,
-			String instructions) {}
+	private record ClientSecretRequest(SessionSpec session) {}
+
+	private record SessionSpec(String type, String model, String instructions, AudioSpec audio) {}
+
+	private record AudioSpec(OutputAudio output, InputAudio input) {}
+
+	private record OutputAudio(String voice) {}
+
+	private record InputAudio(@JsonProperty("turn_detection") TurnDetection turnDetection) {}
 
 	private record TurnDetection(String type) {}
 
-	private record SessionResponse(String model, @JsonProperty("client_secret") ClientSecret clientSecret) {}
+	private record ClientSecretResponse(
+			String value,
+			@JsonProperty("expires_at") long expiresAt,
+			SessionInfo session) {}
 
-	private record ClientSecret(String value, @JsonProperty("expires_at") long expiresAt) {}
+	private record SessionInfo(String model) {}
 }
