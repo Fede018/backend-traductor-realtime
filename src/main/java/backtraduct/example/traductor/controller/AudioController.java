@@ -1,5 +1,8 @@
 package backtraduct.example.traductor.controller;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -25,7 +28,18 @@ public class AudioController {
 			@RequestParam(required = false) String sourceLanguage,
 			@RequestParam(required = false) String targetLanguage
 	) {
-		AudioUploadResponse response = audioService.receive(audio, sourceLanguage, targetLanguage);
+		if (audio == null || audio.isEmpty()) {
+			throw new IllegalArgumentException("El archivo de audio no puede estar vacío");
+		}
+
+		byte[] audioBytes;
+		try {
+			audioBytes = audio.getBytes();
+		} catch (IOException e) {
+			throw new UncheckedIOException("No se pudo leer el archivo de audio", e);
+		}
+
+		AudioUploadResponse response = audioService.process(audioBytes, audio.getContentType(), sourceLanguage, targetLanguage);
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
 }

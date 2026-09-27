@@ -4,7 +4,6 @@ import java.util.Base64;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import backtraduct.example.traductor.client.OpenAiSttClient;
 import backtraduct.example.traductor.client.OpenAiTranslationClient;
@@ -29,8 +28,8 @@ public class AudioService {
 		this.openAiTtsClient = openAiTtsClient;
 	}
 
-	public AudioUploadResponse receive(MultipartFile audio, String sourceLanguage, String targetLanguage) {
-		if (audio == null || audio.isEmpty()) {
+	public AudioUploadResponse process(byte[] audioBytes, String contentType, String sourceLanguage, String targetLanguage) {
+		if (audioBytes == null || audioBytes.length == 0) {
 			throw new IllegalArgumentException("El archivo de audio no puede estar vacío");
 		}
 		if (sourceLanguage == null || sourceLanguage.isBlank()) {
@@ -40,7 +39,7 @@ public class AudioService {
 			throw new IllegalArgumentException("targetLanguage no puede estar vacío");
 		}
 
-		String transcript = openAiSttClient.transcribe(audio, sourceLanguage);
+		String transcript = openAiSttClient.transcribe(audioBytes, "audio.webm", sourceLanguage);
 
 		if (transcript.isBlank()) {
 			throw new TranslationException("No se detectó voz en el audio");
@@ -57,8 +56,8 @@ public class AudioService {
 
 		return new AudioUploadResponse(
 				UUID.randomUUID(),
-				audio.getSize(),
-				audio.getContentType(),
+				(long) audioBytes.length,
+				contentType,
 				sourceLanguage,
 				targetLanguage,
 				transcript,
