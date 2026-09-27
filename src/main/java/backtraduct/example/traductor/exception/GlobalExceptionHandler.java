@@ -21,6 +21,7 @@ public class GlobalExceptionHandler {
 
 	@ExceptionHandler(SttException.class)
 	public ProblemDetail handleSttException(SttException ex) {
+		ex.printStackTrace();
 		return ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, "No se pudo transcribir el audio");
 	}
 
