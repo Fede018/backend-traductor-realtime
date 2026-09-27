@@ -29,6 +29,11 @@ public class GlobalExceptionHandler {
 		return ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, "No se pudo traducir el texto");
 	}
 
+	@ExceptionHandler(TtsException.class)
+	public ProblemDetail handleTtsException(TtsException ex) {
+		return ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, "No se pudo generar el audio de la traducción");
+	}
+
 	@ExceptionHandler(Exception.class)
 	public ProblemDetail handleException(Exception ex) {
 		return ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
